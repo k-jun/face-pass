@@ -5,6 +5,14 @@ import axios from "axios";
 import * as tf from "@tensorflow/tfjs";
 import {Webcam} from './webcam';
 import {ControllerDataset} from './controller_dataset';
+import {withStyles} from "@material-ui/core/styles";
+import FormControl from "@material-ui/core/FormControl";
+import InputLabel from "@material-ui/core/InputLabel";
+import Input from "@material-ui/core/Input";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import Button from "@material-ui/core/Button";
+import AddIcon from "@material-ui/icons/Add";
+
 
 const webcam = new Webcam(document.getElementById('webcam'));
 const controllerDataset = new ControllerDataset(10);
@@ -12,6 +20,23 @@ const controllerDataset = new ControllerDataset(10);
 
 let mobilenet
 let model
+
+const styles = theme => ({
+  button: {
+    margin: theme.spacing.unit,
+  },
+  input: {
+    display: 'none',
+  },
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+  },
+});
+
 class LoginScreen extends Component {
   constructor () {
     super()
@@ -116,23 +141,35 @@ class LoginScreen extends Component {
 
 
   render() {
+    const { classes } = this.props;
+    const {processing, email } = this.state
     return (
       <div style={{flexDirection: "column", display: "flex"}}>
-        this is login screen
-        <a href="/">Go back</a>
         {!this.state.taking
-          ? <div>
-            <label htmlFor="">Email</label>
-            <input type="text" disabled={this.state.processing} value={this.email} onChange={(event) => {this.setState({email: event.target.value})}} />
-            <button onClick={() => {this.handleOnClick()}}>Submit</button>
+          ? <div style={{flexDirection: 'row', justifyContent: "center"}}>
+            <FormControl className={classes.formControl} aria-describedby="name-helper-text">
+              <InputLabel htmlFor="name-helper">Email</InputLabel>
+              <Input id="name-helper" value={email} onChange={(event) => {this.setState({email: event.target.value})}} fullWidth disabled={processing}/>
+            <FormHelperText id="name-helper-text">type your email to fetch images and train the model</FormHelperText>
+
+            </FormControl>
+            <Button variant="fab" color="primary" aria-label="Add" className={classes.button} onClick={() => this.handleOnClick()} disabled={processing}>
+              <AddIcon />
+            </Button>
           </div>
           : <div>
             <button onClick={() => this.predict()}>撮影して予測</button>
           </div>
         }
+
+        <div>
+          <Button variant="outlined" size="large" color="secondary" className={classes.button} href={"./"}>
+            Go Back
+          </Button>
+        </div>
       </div>
     );
   }
 }
 
-export default withRouter(LoginScreen);
+export default  withRouter(withStyles(styles)(LoginScreen));

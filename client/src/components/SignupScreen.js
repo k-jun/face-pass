@@ -4,10 +4,33 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import {Webcam} from './webcam';
 import axios from 'axios';
+import Button from "@material-ui/core/Button";
+import {withStyles} from "@material-ui/core/styles";
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import FormControl from '@material-ui/core/FormControl';
+import AddIcon from '@material-ui/icons/Add';
 
 const webcam = new Webcam(document.getElementById('webcam'));
 
 let mobilenet
+
+const styles = theme => ({
+  button: {
+    margin: theme.spacing.unit,
+  },
+  input: {
+    display: 'none',
+  },
+  container: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+  },
+});
 
 class SignupScreen extends Component {
 
@@ -64,23 +87,36 @@ class SignupScreen extends Component {
     }
 
     render() {
-      const {photoNum, processing} = this.state
+      const {photoNum, processing, name} = this.state
+      const { classes } = this.props;
       return (
         <div style={{flexDirection: 'column', display: "flex"}}>
-          this is sign up screen
-          <a href="/">Go back</a>
-          <div>
-            <label htmlFor="">email</label>
-            <input type="text" value={this.email} onChange={(event) => {this.handleOnChange(event.target.value)}} />
-          </div>
-          <div>
-            <button onClick={() => this.handleOnClick()} disabled={this.state.processing}>Collect Image (now {this.state.photoNum})</button>
+
+          {/*<div>*/}
+            {/*<label htmlFor="">email</label>*/}
+            {/*<input type="text" value={this.email} onChange={(event) => {this.handleOnChange(event.target.value)}} />*/}
+          {/*</div>*/}
+          <div style={{flexDirection: 'row', display: 'flex', justifyContent: "center"}}>
+            <FormControl className={classes.formControl} aria-describedby="name-helper-text">
+            <InputLabel htmlFor="name-helper">Email</InputLabel>
+            <Input id="name-helper" value={name} onChange={this.handleChange} fullWidth disabled={processing}/>
+            <FormHelperText id="name-helper-text">{(photoNum >= 3) ? 'you are ready to log in' : 'more photos are needed to login'} (now {photoNum})</FormHelperText>
+
+          </FormControl>
+            <Button variant="fab" color="primary" aria-label="Add" className={classes.button} onClick={() => this.handleOnClick()} disabled={processing}>
+              <AddIcon />
+            </Button>
           </div>
 
-          <h5>{(photoNum >= 3) ? 'you are ready to log in' : 'more photos are needed to log in'}</h5>
+          <div>
+            <Button variant="outlined" size="large" color="secondary" className={classes.button} href={"./"}>
+              Go Back
+            </Button>
+          </div>
+
         </div>
       );
     }
 }
 
-export default withRouter(SignupScreen);
+export default  withRouter(withStyles(styles)(SignupScreen));
