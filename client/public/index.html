@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+    <!--
+      manifest.json provides metadata used when your web app is added to the
+      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Raleway:100,300,400,700" rel="stylesheet">
+
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="css/animate.css">
+    <!-- Icomoon Icon Fonts-->
+    <link rel="stylesheet" href="css/icomoon.css">
+    <!-- Themify Icons-->
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <!-- Bootstrap  -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+
+    <!-- Magnific Popup -->
+    <link rel="stylesheet" href="css/magnific-popup.css">
+
+    <!-- Owl Carousel  -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <link rel="stylesheet" href="css/owl.theme.default.min.css">
+
+    <!-- Theme style  -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Modernizr JS -->
+    <script src="js/modernizr-2.6.2.min.js"></script>
+    <title>Face Pass</title>
+  </head>
+  <body>
+  <!--<div class="gtco-loader"></div>-->
+
+  <div id="page">
+
+    <nav class="gtco-nav" role="navigation">
+      <div class="gtco-container">
+
+        <div class="row">
+          <div class="col-sm-2 col-xs-12">
+            <div id="gtco-logo"><a href="index.html"><img src="images/logo.png" alt="Free HTML5 Website Template by GetTemplates.co"></a></div>
+          </div>
+          <div class="col-xs-10 text-right menu-1">
+            <ul>
+              <li class="active"><a href="/">Home</a></li>
+              <li class="active"><a href="/signup">Signup</a></li>
+              <li class="active"><a href="/login">Login</a></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </nav>
+
+    <header id="gtco-header" class="gtco-cover" role="banner">
+      <div class="gtco-container">
+        <div class="row">
+          <div class="col-md-12 col-md-offset-0 text-left">
+            <div class="display-t">
+              <div class="display-tc">
+                <div class="row">
+                  <div class="col-md-5 text-center header-img">
+                    <div className="webcam-box-outer">
+                      <div className="webcam-box-inner" style="text-align: center">
+                        <video autoPlay playsInline muted id="webcam" width="224" height="224"></video>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-7 copy">
+                    <h1>Face Pass</h1>
+                    <p>An image with your face would be password to login</p>
+                    <div id="root">
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+  </div>
+
+
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  </body>
+</html>
