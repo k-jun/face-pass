@@ -50,8 +50,7 @@ class SignupScreen extends Component {
     }
 
     async loadMobilenet () {
-      const mobilenet = await tf.loadModel(
-        'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
+      const mobilenet = await tf.loadModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
 
       // Return a model that outputs an internal activation.
       const layer = mobilenet.getLayer('conv_pw_13_relu');
@@ -64,10 +63,14 @@ class SignupScreen extends Component {
 
     async handleOnClick () {
       this.setState({processing: true})
+      const {name} = this.state
 
       const xs = mobilenet.predict(webcam.capture())
       const x_data = await xs.data()
-      let params = {email: this.state.email, x: x_data.toString()}
+      let params = {
+        email: name,
+        x: x_data.toString()
+      }
       const res = await axios.post('/api/add_face_data', params)
       if (res) {
         this.setState({processing: false, photoNum: res.data.dataAmount})
@@ -83,7 +86,10 @@ class SignupScreen extends Component {
         console.log(res.data)
         this.setState({processing: false, photoNum: res.data.dataAmount})
       }
+    }
 
+    handleOnChange (event) {
+      this.setState({name: event.target.value});
     }
 
     render() {
@@ -91,15 +97,10 @@ class SignupScreen extends Component {
       const { classes } = this.props;
       return (
         <div style={{flexDirection: 'column', display: "flex"}}>
-
-          {/*<div>*/}
-            {/*<label htmlFor="">email</label>*/}
-            {/*<input type="text" value={this.email} onChange={(event) => {this.handleOnChange(event.target.value)}} />*/}
-          {/*</div>*/}
           <div style={{flexDirection: 'row', display: 'flex', justifyContent: "center"}}>
             <FormControl className={classes.formControl} aria-describedby="name-helper-text">
             <InputLabel htmlFor="name-helper">Email</InputLabel>
-            <Input id="name-helper" value={name} onChange={this.handleChange} fullWidth disabled={processing}/>
+            <Input id="name-helper" value={name} onChange={(event) => this.handleOnChange(event)} fullWidth disabled={processing}/>
             <FormHelperText id="name-helper-text">{(photoNum >= 3) ? 'you are ready to log in' : 'more photos are needed to login'} (now {photoNum})</FormHelperText>
 
           </FormControl>

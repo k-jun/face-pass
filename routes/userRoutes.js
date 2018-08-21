@@ -45,8 +45,10 @@ module.exports = app => {
       return res.json({message: "email was not provided"})
     }
     const AllImage = await User.find({email: req.body.email})
-    if (AllImage.length !== 30) {
-      return res.json({images: AllImage})
+
+    const fakeImages = await User.find({email: {'$ne': req.body.email }});
+    if (AllImage.length < 30) {
+      return res.json({images: AllImage, fake_images: fakeImages})
     }
     return res.json({message: "something going wrong", images: AllImage})
   })

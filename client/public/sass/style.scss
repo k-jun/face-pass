@@ -6,7 +6,7 @@ $grid-gutter-width: 40px;
 $border-radius-base:  4px;
 $padding-base-vertical: 14px;
 
-$brand-primary: #17B794;
+$brand-primary: #fff;
 $brand-secondary: #118DF0; 
 $brand-special: #00ffa3;
 
@@ -405,7 +405,7 @@ h1, h2, h3, h4, h5, h6, figure {
 	}
 	.display-t,
 	.display-tc {
-		height: 900px;
+		height: 800px;
 		display: table;
 		width: 100%;
 		@media screen and (max-width: $screen-sm) {

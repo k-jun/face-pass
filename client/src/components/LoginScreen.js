@@ -43,7 +43,8 @@ class LoginScreen extends Component {
     this.state = {
       email: "",
       taking: false,
-      processing: false
+      processing: false,
+      result: 0
     }
   }
 
@@ -53,13 +54,19 @@ class LoginScreen extends Component {
 
   async handleOnClick () {
     this.setState({processing: true})
-    const params = {email: "keijun"}
+    const params = {email: this.state.email}
     const res = await axios.post('/api/get_all_images', params)
     const image_string = res.data.images.map((item) => item.x_data)
+    const fake_image_string = res.data.fake_images.map((item) => item.x_data)
 
     image_string.forEach((value) => {
       const image_tensor = tf.tensor1d(value.split(','))
       controllerDataset.addExample(image_tensor.reshape([1, 7, 7, 256]), 1)
+    })
+
+    fake_image_string.forEach((value) => {
+      const image_tensor = tf.tensor1d(value.split(','))
+      controllerDataset.addExample(image_tensor.reshape([1, 7, 7, 256]), Math.floor(Math.random() * 9 ) + 2)
     })
 
     this.training()
@@ -69,9 +76,6 @@ class LoginScreen extends Component {
   }
 
   async predict () {
-    const img = webcam.capture();
-    const activation = mobilenet.predict(img);
-    const predictions = model.predict(activation);
     const predictedClass = tf.tidy(() => {
       // Capture the frame from the webcam.
       const img = webcam.capture();
@@ -80,10 +84,11 @@ class LoginScreen extends Component {
       return predictions.as1D().argMax();
     });
     const classId = (await predictedClass.data())[0];
-    console.log(classId)
+    this.setState({result: classId})
+
   }
 
-  training () {
+  async training () {
     model = tf.sequential({
       layers: [
         // Flattens the input to a vector so we can use it in a dense layer. While
@@ -127,7 +132,26 @@ class LoginScreen extends Component {
           await tf.nextFrame();
         }
       }
-    });
+    })
+
+    // const trained_model = await tf.loadModel('./trained_model/my-model-1.json');
+    // trained_model.fit(controllerDataset.xs, controllerDataset.ys, {
+    //   batchSize,
+    //   epochs: 20,
+    //   callbacks: {
+    //     onBatchEnd: async (batch, logs) => {
+    //       // ui.trainStatus('Loss: ' + logs.loss.toFixed(5));
+    //       await tf.nextFrame();
+    //     }
+    //   }
+    // })
+
+    // await model.save('downloads://my-model-1').catch((err) => {
+    //   console.log(err)
+    //   console.log("what is going on???")
+    // });
+
+
   }
 
   async loadMobilenet () {
@@ -142,7 +166,7 @@ class LoginScreen extends Component {
 
   render() {
     const { classes } = this.props;
-    const {processing, email } = this.state
+    const {processing, email, result } = this.state
     return (
       <div style={{flexDirection: "column", display: "flex"}}>
         {!this.state.taking
@@ -158,7 +182,9 @@ class LoginScreen extends Component {
             </Button>
           </div>
           : <div>
-            <button onClick={() => this.predict()}>撮影して予測</button>
+            <Button variant="outlined" size="large" color="secondary" className={classes.button} onClick={() => this.predict()} >
+              Try To Login
+            </Button>
           </div>
         }
 
@@ -167,6 +193,7 @@ class LoginScreen extends Component {
             Go Back
           </Button>
         </div>
+        <div>{result === 0 ? "ここに結果が表示されます" : result === 1 ? "ログイン成功" : "ログイン失敗"}</div>
       </div>
     );
   }

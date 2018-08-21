@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
-import {Webcam} from "./webcam";
-const webcam = new Webcam(document.getElementById('webcam'));
 
 const styles = theme => ({
   button: {
@@ -19,7 +17,9 @@ class HomeScreen extends Component {
     state = {file: null}
 
     async componentDidMount () {
-      await webcam.setup();
+      // await webcam.setup();
+
+
     }
 
     render() {
