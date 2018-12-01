@@ -133,25 +133,6 @@ class LoginScreen extends Component {
         }
       }
     })
-
-    // const trained_model = await tf.loadModel('./trained_model/my-model-1.json');
-    // trained_model.fit(controllerDataset.xs, controllerDataset.ys, {
-    //   batchSize,
-    //   epochs: 20,
-    //   callbacks: {
-    //     onBatchEnd: async (batch, logs) => {
-    //       // ui.trainStatus('Loss: ' + logs.loss.toFixed(5));
-    //       await tf.nextFrame();
-    //     }
-    //   }
-    // })
-
-    // await model.save('downloads://my-model-1').catch((err) => {
-    //   console.log(err)
-    //   console.log("what is going on???")
-    // });
-
-
   }
 
   async loadMobilenet () {
