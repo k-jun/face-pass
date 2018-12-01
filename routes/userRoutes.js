@@ -54,12 +54,13 @@ module.exports = app => {
   })
 
   app.get('/api/get_all_images_for_extentioins', async (req, res) => {
-    if (!req.query.email) {
+    const {email} = req.query
+    if (!email) {
       return res.json({message: "email was not provided"})
     }
-    const AllImage = await User.find({email: req.body.email})
+    const AllImage = await User.find({email: email})
 
-    const fakeImages = await User.find({email: {'$ne': req.body.email }});
+    const fakeImages = await User.find({email: {'$ne': email }});
     if (AllImage.length < 30) {
       return res.json({images: AllImage, fake_images: fakeImages})
     }
