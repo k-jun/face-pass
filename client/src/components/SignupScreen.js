@@ -8,9 +8,8 @@ import Button from "@material-ui/core/Button";
 import {withStyles} from "@material-ui/core/styles";
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
-import AddIcon from '@material-ui/icons/Add';
+import CloudUpload from '@material-ui/icons/CloudUpload';
 
 const webcam = new Webcam(document.getElementById('webcam'));
 
@@ -98,23 +97,14 @@ class SignupScreen extends Component {
       return (
         <div style={{flexDirection: 'column', display: "flex"}}>
           <div style={{flexDirection: 'row', display: 'flex', justifyContent: "center"}}>
-            <FormControl className={classes.formControl} aria-describedby="name-helper-text">
-            <InputLabel htmlFor="name-helper">Email</InputLabel>
-            <Input id="name-helper" value={name} onChange={(event) => this.handleOnChange(event)} fullWidth disabled={processing}/>
-            <FormHelperText id="name-helper-text">{(photoNum >= 3) ? 'you are ready to log in' : 'more photos are needed to login'} (now {photoNum})</FormHelperText>
-
-          </FormControl>
-            <Button variant="fab" color="primary" aria-label="Add" className={classes.button} onClick={() => this.handleOnClick()} disabled={processing}>
-              <AddIcon />
+            <FormControl style={{minWidth: 200}} className={classes.formControl} aria-describedby="name-helper-text">
+              <InputLabel htmlFor="name-helper">Label</InputLabel>
+              <Input id="name-helper" value={name} onChange={(event) => this.handleOnChange(event)} fullWidth disabled={processing}/>
+            </FormControl>
+            <Button variant="fab" aria-label="Add" className={classes.button} onClick={() => this.handleOnClick()} disabled={processing}>
+              <CloudUpload />
             </Button>
           </div>
-
-          <div>
-            <Button variant="outlined" size="large" color="secondary" className={classes.button} href={"./"}>
-              Go Back
-            </Button>
-          </div>
-
         </div>
       );
     }

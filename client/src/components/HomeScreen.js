@@ -7,32 +7,23 @@ import { withStyles } from '@material-ui/core/styles';
 const styles = theme => ({
   button: {
     margin: theme.spacing.unit,
-  },
-  input: {
-    display: 'none',
-  },
+  }
 });
 
 class HomeScreen extends Component {
     state = {file: null}
 
-    async componentDidMount () {
-      // await webcam.setup();
-
-
-    }
-
     render() {
       const { classes } = this.props;
         return (
-            <div style={{flexDirection: 'row', display: 'flex', justifyContent: "space-around"}}>
-              <Button variant="outlined" size="large" color="secondary" className={classes.button} href={"./login"}>
-                Login
-              </Button>
-              <Button variant="outlined" size="large" color="default" className={classes.button} href={"./signup"}>
-                Signup
-              </Button>
-            </div>
+          <div style={{flexDirection: 'row', display: 'flex', justifyContent: "space-around"}}>
+            <a style={{fontSize: 20, borderBottom: 2}} href={"./login"}>
+              Login
+            </a>
+            <a style={{fontSize: 20}} href={"./signup"}>
+              Signup
+            </a>
+          </div>
         );
     }
 }

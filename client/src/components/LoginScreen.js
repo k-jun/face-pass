@@ -9,42 +9,32 @@ import {withStyles} from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Input from "@material-ui/core/Input";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import Button from "@material-ui/core/Button";
-import AddIcon from "@material-ui/icons/Add";
+import Send from "@material-ui/icons/Send";
 
 
 const webcam = new Webcam(document.getElementById('webcam'));
 const controllerDataset = new ControllerDataset(10);
-
-
 let mobilenet
 let model
+let resultMessage = document.getElementById('result-message')
+let title = document.getElementById('facepass')
 
 const styles = theme => ({
   button: {
     margin: theme.spacing.unit,
   },
-  input: {
-    display: 'none',
-  },
-  container: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
   formControl: {
     margin: theme.spacing.unit,
-  },
-});
+  }
+})
 
 class LoginScreen extends Component {
   constructor () {
     super()
     this.state = {
       email: "",
-      taking: false,
-      processing: false,
-      result: 0
+      disabled: false
     }
   }
 
@@ -52,129 +42,126 @@ class LoginScreen extends Component {
     mobilenet = await this.loadMobilenet();
   }
 
-  async handleOnClick () {
-    this.setState({processing: true})
-    const params = {email: this.state.email}
-    const res = await axios.post('/api/get_all_images', params)
-    const image_string = res.data.images.map((item) => item.x_data)
-    const fake_image_string = res.data.fake_images.map((item) => item.x_data)
-
-    image_string.forEach((value) => {
-      const image_tensor = tf.tensor1d(value.split(','))
-      controllerDataset.addExample(image_tensor.reshape([1, 7, 7, 256]), 1)
+  loadMobilenet () {
+    return new Promise(async (solve, reject) => {
+      const localMobilenet = await tf.loadModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json')
+      const layer = localMobilenet.getLayer('conv_pw_13_relu');
+      solve(tf.model({inputs: localMobilenet.inputs, outputs: layer.output}))
     })
-
-    fake_image_string.forEach((value) => {
-      const image_tensor = tf.tensor1d(value.split(','))
-      controllerDataset.addExample(image_tensor.reshape([1, 7, 7, 256]), Math.floor(Math.random() * 9 ) + 2)
-    })
-
-    this.training()
-
-    this.setState({taking: true, processing: false})
-    await webcam.setup();
   }
 
-  async predict () {
-    const predictedClass = tf.tidy(() => {
-      // Capture the frame from the webcam.
-      const img = webcam.capture();
-      const activation = mobilenet.predict(img);
-      const predictions = model.predict(activation);
-      return predictions.as1D().argMax();
-    });
-    const classId = (await predictedClass.data())[0];
-    this.setState({result: classId})
-
+  async DoFacePass () {
+    this.setState({disabled: true})
+    resultMessage.innerHTML = "Fetching Images Now..."
+    await this.fetchImages()
+    resultMessage.innerHTML = "Training Images Now..."
+    await this.training()
+    resultMessage.innerHTML = "Ready!!!"
+    await webcam.setup()
+    this.predicting()
   }
 
-  async training () {
-    model = tf.sequential({
-      layers: [
-        // Flattens the input to a vector so we can use it in a dense layer. While
-        // technically a layer, this only performs a reshape (and has no training
-        // parameters).
-        tf.layers.flatten({inputShape: [7, 7, 256]}),
+  fetchImages () {
+    return new Promise(async (solve, reject) => {
+      const { email } = this.state
+      const params = { email }
+      const res = await axios.post('/api/get_all_images', params)
+      const image_string = res.data.images.map((item) => item.x_data)
+      const fake_image_string = res.data.fake_images.map((item) => item.x_data)
 
-        // Layer 1
-        tf.layers.dense({
-          units: 100,
-          activation: 'relu',
-          kernelInitializer: 'varianceScaling',
-          useBias: true
-        }),
-        // Layer 2. The number of units of the last layer should correspond
-        // to the number of classes we want to predict.
-        tf.layers.dense({
-          units: 10,
-          kernelInitializer: 'varianceScaling',
-          useBias: false,
-          activation: 'softmax'
-        })
-      ]
-    });
+      image_string.forEach((value) => {
+        const image_tensor = tf.tensor1d(value.split(','))
+        controllerDataset.addExample(image_tensor.reshape([1, 7, 7, 256]), 1)
+      })
 
-    const optimizer = tf.train.adam(0.0001);
-    model.compile({optimizer: optimizer, loss: 'categoricalCrossentropy'});
+      fake_image_string.forEach((value) => {
+        const image_tensor = tf.tensor1d(value.split(','))
+        controllerDataset.addExample(image_tensor.reshape([1, 7, 7, 256]), Math.floor(Math.random() * 9 ) + 2)
+      })
+      solve()
+    })    
+  }
 
-    const batchSize = Math.floor(controllerDataset.xs.shape[0] * 0.4);
-    if (!(batchSize > 0)) {
-      throw new Error(
-        `Batch size is 0 or NaN. Please choose a non-zero fraction.`);
-    }
+  training () {
+    return new Promise(async (solve, reject) => {
+      model = tf.sequential({
+        layers: [
+          tf.layers.flatten({inputShape: [7, 7, 256]}),
+          tf.layers.dense({
+            units: 100,
+            activation: 'relu',
+            kernelInitializer: 'varianceScaling',
+            useBias: true
+          }),
+          tf.layers.dense({
+            units: 10,
+            kernelInitializer: 'varianceScaling',
+            useBias: false,
+            activation: 'softmax'
+          })
+        ]
+      })
+  
+      const optimizer = tf.train.adam(0.0001);
+      model.compile({optimizer: optimizer, loss: 'categoricalCrossentropy'});
+  
+      const batchSize = Math.floor(controllerDataset.xs.shape[0] * 0.4)
+      if (!(batchSize > 0)) throw new Error(`Batch size is 0 or NaN. Please choose a non-zero fraction.`)
+  
+      model.fit(controllerDataset.xs, controllerDataset.ys, {
+        batchSize,
+        epochs: 20,
+        callbacks: { onBatchEnd: async (batch, logs) => await tf.nextFrame() }
+      })
+      solve()
+    })
+  }
 
-    model.fit(controllerDataset.xs, controllerDataset.ys, {
-      batchSize,
-      epochs: 20,
-      callbacks: {
-        onBatchEnd: async (batch, logs) => {
-          // ui.trainStatus('Loss: ' + logs.loss.toFixed(5));
-          await tf.nextFrame();
-        }
+  async predicting () {
+    while (true) {
+      const classId = await this.predict()
+      if (classId === 1) {
+        resultMessage.innerHTML = "Successed"
+        resultMessage.setAttribute("style", "text-align: center; color: green")
+        title.setAttribute("style", "text-align: center; color: green")
+      } else {
+        resultMessage.innerHTML = "Failed"
+        resultMessage.setAttribute("style", "text-align: center; color: red")
+        title.setAttribute("style", "text-align: center; color: red")
+        
       }
+    }
+  }
+
+  predict () {
+    return new Promise((solve, reject) => {
+      setTimeout(async () => {
+        const predictedClass = tf.tidy(() => {
+          const img = webcam.capture();
+          const activation = mobilenet.predict(img);
+          const predictions = model.predict(activation);
+          return predictions.as1D().argMax();
+        });
+        const classId = (await predictedClass.data())[0];
+        solve(classId)
+      }, 1000);
     })
   }
-
-  async loadMobilenet () {
-    const mobilenet = await tf.loadModel(
-      'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');
-
-    // Return a model that outputs an internal activation.
-    const layer = mobilenet.getLayer('conv_pw_13_relu');
-    return tf.model({inputs: mobilenet.inputs, outputs: layer.output});
-  }
-
 
   render() {
     const { classes } = this.props;
-    const {processing, email, result } = this.state
+    const {disabled, email} = this.state
     return (
       <div style={{flexDirection: "column", display: "flex"}}>
-        {!this.state.taking
-          ? <div style={{flexDirection: 'row', justifyContent: "center"}}>
-            <FormControl className={classes.formControl} aria-describedby="name-helper-text">
-              <InputLabel htmlFor="name-helper">Email</InputLabel>
-              <Input id="name-helper" value={email} onChange={(event) => {this.setState({email: event.target.value})}} fullWidth disabled={processing}/>
-            <FormHelperText id="name-helper-text">type your email to fetch images and train the model</FormHelperText>
-
-            </FormControl>
-            <Button variant="fab" color="primary" aria-label="Add" className={classes.button} onClick={() => this.handleOnClick()} disabled={processing}>
-              <AddIcon />
-            </Button>
-          </div>
-          : <div>
-            <Button variant="outlined" size="large" color="secondary" className={classes.button} onClick={() => this.predict()} >
-              Try To Login
-            </Button>
-          </div>
-        }
-
-        <div>
-          <Button variant="outlined" size="large" color="secondary" className={classes.button} href={"./"}>
-            Go Back
+        <div style={{flexDirection: 'row', justifyContent: "center"}}>
+          <FormControl className={classes.formControl} aria-describedby="name-helper-text">
+            <InputLabel htmlFor="name-helper">Label</InputLabel>
+            <Input id="name-helper" style={{minWidth: 200}} value={email} onChange={(event) => {this.setState({email: event.target.value})}} fullWidth disabled={disabled}/>
+          </FormControl>
+          <Button variant="fab" aria-label="Add" className={classes.button} onClick={() => this.DoFacePass()} disabled={disabled || !email }>
+            <Send />
           </Button>
         </div>
-        <div>{result === 0 ? "ここに結果が表示されます" : result === 1 ? "ログイン成功" : "ログイン失敗"}</div>
       </div>
     );
   }
