@@ -35,6 +35,7 @@
     "react/prop-types": 0,
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"]  }],
-    "react/no-array-index-key": "off"
+    "react/no-array-index-key": "off",
+    "": "off"
   }
 }
