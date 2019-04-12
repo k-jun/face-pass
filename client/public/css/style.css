@@ -5,11 +5,7 @@
   font-weight: normal;
   font-style: normal;
 }
-/* =======================================================
-*
-* 	Template Style 
-*
-* ======================================================= */
+
 body {
   font-family: "Raleway", Arial, sans-serif;
   font-weight: 400;
@@ -135,7 +131,6 @@ h1, h2, h3, h4, h5, h6, figure {
 }
 .gtco-nav ul li.has-dropdown > a:after {
   font-family: 'icomoon';
-  speak: none;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;

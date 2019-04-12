@@ -15,7 +15,7 @@ let mobilenet
 const webcam = new Webcam(document.getElementById('webcam'))
 const BASE_MODEL_URL = 'https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json'
 
-const loadMobilenet = () => async () => {
+const loadMobilenet = async () => {
   const localMobilenet = await tf.loadModel(BASE_MODEL_URL)
   const layer = localMobilenet.getLayer('conv_pw_13_relu')
   return tf.model({ inputs: localMobilenet.inputs, outputs: layer.output })
@@ -25,14 +25,15 @@ class SignupScreen extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      email: '',
+      name: '',
       processing: false,
     }
   }
 
   async componentDidMount() {
     await webcam.setup()
-    mobilenet = await loadMobilenet()
+    const returnValue = await loadMobilenet()
+    mobilenet = returnValue
   }
 
   async handleOnClick() {
@@ -46,17 +47,6 @@ class SignupScreen extends Component {
       x: xData.toString(),
     }
     const res = await axios.post('/api/add_face_data', params)
-    if (res) {
-      this.setState({ processing: false })
-    }
-  }
-
-  async handleOnSubmit() {
-    const { email } = this.state
-
-    this.setState({ processing: true })
-    const params = { email }
-    const res = await axios.post('/api/get_data_amount', params)
     if (res) {
       this.setState({ processing: false })
     }

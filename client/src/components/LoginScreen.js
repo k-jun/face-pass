@@ -20,13 +20,13 @@ let model
 const resultMessage = document.getElementById('result-message')
 const title = document.getElementById('facepass')
 
-const loadMobilenet = () => async () => {
+const loadMobilenet = async () => {
   const localMobilenet = await tf.loadModel(BASE_MODEL_URL)
   const layer = localMobilenet.getLayer('conv_pw_13_relu')
   return tf.model({ inputs: localMobilenet.inputs, outputs: layer.output })
 }
 
-const training = () => async () => {
+const training = async () => {
   model = tf.sequential({
     layers: [
       tf.layers.flatten({ inputShape: [7, 7, 256] }),
@@ -58,7 +58,7 @@ const training = () => async () => {
   })
 }
 
-const predict = () => () => {
+const predict = () => {
   setTimeout(async () => {
     const predictedClass = tf.tidy(() => {
       const img = webcam.capture()
