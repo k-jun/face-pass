@@ -1,5 +1,4 @@
 require('@tensorflow/tfjs')
-const tf = require('@tensorflow/tfjs-node');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 
@@ -23,7 +22,7 @@ module.exports = app => {
       const number = AllImage.length
       return res.json({message: "Goob job!", newUser: newUser, dataAmount: number})
     }
-    // res.json({message: "something going wrong"})
+    res.json({message: "something going wrong"})
   })
 
   app.post('/api/get_data_amount', async (req, res) => {
@@ -33,13 +32,6 @@ module.exports = app => {
     res.json({message: "Goob job!", dataAmount: number})
   })
 
-  app.get('/api/test', async (req, res) => {
-    const AllImage = User.find({})
-    const number = AllImage.length
-    const image = await AllImage.sort({created_at: -1}).limit(1).where({'email': 'keika'})
-    return res.json({images: image[0]._id})
-  })
-
   app.post('/api/get_all_images', async (req, res) => {
     if (!req.body.email) {
       return res.json({message: "email was not provided"})
@@ -47,10 +39,7 @@ module.exports = app => {
     const AllImage = await User.find({email: req.body.email})
 
     const fakeImages = await User.find({email: {'$ne': req.body.email }});
-    if (AllImage.length < 30) {
-      return res.json({images: AllImage, fake_images: fakeImages})
-    }
-    return res.json({message: "something going wrong", images: AllImage})
+    return res.json({images: AllImage, fake_images: fakeImages})
   })
 
   app.get('/api/get_all_images_for_extentioins', async (req, res) => {
@@ -61,9 +50,6 @@ module.exports = app => {
     const AllImage = await User.find({email: email})
 
     const fakeImages = await User.find({email: {'$ne': email }});
-    if (AllImage.length < 30) {
-      return res.json({images: AllImage, fake_images: fakeImages})
-    }
-    return res.json({message: "something going wrong", images: AllImage})
+    return res.json({images: AllImage, fake_images: fakeImages})
   })
 };
