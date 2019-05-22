@@ -12,7 +12,6 @@ mongoose.connect(keys.mongoURI, { useNewUrlParser: true });
 
 const app = express();
 
-
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -27,7 +26,7 @@ if (['production'].includes(process.env.NODE_ENV)) {
     });
 }
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Listening on port please`, PORT);
 });
