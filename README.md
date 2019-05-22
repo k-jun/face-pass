@@ -13,4 +13,14 @@ Tensorflow.js
 Node(Express)
 React
 
-あとでServerの方も書き直したい
+## 起動方法
+
+### server(node)
+```
+cd server && yarn run start
+```
+
+### client(react)
+```
+cd client && yarn run start
+```
