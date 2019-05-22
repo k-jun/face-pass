@@ -30,10 +30,10 @@ const postImage = async ({ name }) => {
   return axios.post('/api/add_face_data', params)
 }
 
-webcam.setup()
-loadMobilenet()
-
 function SignupScreen() {
+  webcam.setup()
+  loadMobilenet()
+
   const [processing, setProcessing] = useState(false)
   const [name, setName] = useState('')
 

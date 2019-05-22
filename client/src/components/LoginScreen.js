@@ -104,9 +104,8 @@ async function fetchImages({ email }) {
   })
 }
 
-loadMobilenet()
-
 function LoginScreen() {
+  loadMobilenet()
   const [disabled, setDisabled] = useState(false)
   const [email, setEmail] = useState('')
 
