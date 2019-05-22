@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 require('./routes/userRoutes')(app);
 
 if (['production'].includes(process.env.NODE_ENV)) {
-    app.use(express.static('client/build'));
+    app.use(express.static('../client/build'));
 
     const path = require('path');
     app.get('*', (req, res) => {
@@ -26,7 +26,7 @@ if (['production'].includes(process.env.NODE_ENV)) {
     });
 }
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Listening on port please`, PORT);
 });
