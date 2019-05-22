@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import { withRouter } from 'react-router-dom'
 import axios from 'axios'
 import * as tf from '@tensorflow/tfjs'
@@ -23,7 +23,33 @@ const title = document.getElementById('facepass')
 const loadMobilenet = async () => {
   const localMobilenet = await tf.loadModel(BASE_MODEL_URL)
   const layer = localMobilenet.getLayer('conv_pw_13_relu')
-  return tf.model({ inputs: localMobilenet.inputs, outputs: layer.output })
+  mobilenet = tf.model({ inputs: localMobilenet.inputs, outputs: layer.output })
+}
+
+const predict = async () => {
+  const predictedClass = tf.tidy(() => {
+    const img = webcam.capture()
+    const activation = mobilenet.predict(img)
+    const predictions = model.predict(activation)
+    return predictions.as1D().argMax()
+  })
+  const classId = (await predictedClass.data())[0]
+  return classId
+}
+
+const predicting = async () => {
+  setInterval(async () => {
+    const classId = await predict()
+    if (classId === 1) {
+      resultMessage.innerHTML = 'Successed'
+      resultMessage.setAttribute('style', 'text-align: center; color: green')
+      title.setAttribute('style', 'text-align: center; color: green')
+    } else {
+      resultMessage.innerHTML = 'Failed'
+      resultMessage.setAttribute('style', 'text-align: center; color: red')
+      title.setAttribute('style', 'text-align: center; color: red')
+    }
+  }, 1000)
 }
 
 const training = async () => {
@@ -58,52 +84,36 @@ const training = async () => {
   })
 }
 
-const predict = () => {
-  setTimeout(async () => {
-    const predictedClass = tf.tidy(() => {
-      const img = webcam.capture()
-      const activation = mobilenet.predict(img)
-      const predictions = model.predict(activation)
-      return predictions.as1D().argMax()
-    })
-    const classId = (await predictedClass.data())[0]
-    return classId
-  }, 1000)
+async function fetchImages({ email }) {
+  const params = { email }
+  const res = await axios.post('/api/get_all_images', params)
+  const imageString = res.data.images.map(item => item.x_data)
+  const fakeImageString = res.data.fake_images.map(item => item.x_data)
+
+  imageString.forEach((value) => {
+    const imageTensor = tf.tensor1d(value.split(','))
+    controllerDataset.addExample(imageTensor.reshape([1, 7, 7, 256]), 1)
+  })
+
+  fakeImageString.forEach((value) => {
+    const imageTensor = tf.tensor1d(value.split(','))
+    controllerDataset.addExample(
+      imageTensor.reshape([1, 7, 7, 256]),
+      Math.floor(Math.random() * 9) + 2,
+    )
+  })
 }
 
-const predicting = async () => {
-  for (;;) {
-    // eslint-disable-next-line no-await-in-loop
-    const classId = await predict()
-    if (classId === 1) {
-      resultMessage.innerHTML = 'Successed'
-      resultMessage.setAttribute('style', 'text-align: center color: green')
-      title.setAttribute('style', 'text-align: center color: green')
-    } else {
-      resultMessage.innerHTML = 'Failed'
-      resultMessage.setAttribute('style', 'text-align: center color: red')
-      title.setAttribute('style', 'text-align: center color: red')
-    }
-  }
-}
+loadMobilenet()
 
-class LoginScreen extends Component {
-  constructor() {
-    super()
-    this.state = {
-      email: '',
-      disabled: false,
-    }
-  }
+function LoginScreen() {
+  const [disabled, setDisabled] = useState(false)
+  const [email, setEmail] = useState('')
 
-  async componentDidMount() {
-    mobilenet = await loadMobilenet()
-  }
-
-  async DoFacePass() {
-    this.setState({ disabled: true })
+  const DoFacePass = async () => {
+    setDisabled(true)
     resultMessage.innerHTML = 'Fetching Images Now...'
-    await this.fetchImages()
+    await fetchImages({ email })
     resultMessage.innerHTML = 'Training Images Now...'
     await training()
     resultMessage.innerHTML = 'Ready!!!'
@@ -111,46 +121,19 @@ class LoginScreen extends Component {
     predicting()
   }
 
-  fetchImages() {
-    return new Promise(async (solve) => {
-      const { email } = this.state
-      const params = { email }
-      const res = await axios.post('/api/get_all_images', params)
-      const imageString = res.data.images.map(item => item.x_data)
-      const fakeImageString = res.data.fake_images.map(item => item.x_data)
-
-      imageString.forEach((value) => {
-        const imageTensor = tf.tensor1d(value.split(','))
-        controllerDataset.addExample(imageTensor.reshape([1, 7, 7, 256]), 1)
-      })
-
-      fakeImageString.forEach((value) => {
-        const imageTensor = tf.tensor1d(value.split(','))
-        controllerDataset.addExample(
-          imageTensor.reshape([1, 7, 7, 256]),
-          Math.floor(Math.random() * 9) + 2,
-        )
-      })
-      solve()
-    })
-  }
-
-  render() {
-    const { disabled, email } = this.state
-    return (
-      <div style={{ flexDirection: 'column', display: 'flex' }}>
-        <div style={{ flexDirection: 'row', justifyContent: 'center' }}>
-          <FormControl aria-describedby="name-helper-text">
-            <InputLabel htmlFor="name-helper">Label</InputLabel>
-            <Input id="name-helper" style={{ minWidth: 200 }} value={email} onChange={event => this.setState({ email: event.target.value })} fullWidth disabled={disabled} />
-          </FormControl>
-          <Button variant="fab" aria-label="Add" onClick={() => this.DoFacePass()} disabled={disabled || !email}>
-            <Send />
-          </Button>
-        </div>
+  return (
+    <div style={{ flexDirection: 'column', display: 'flex' }}>
+      <div style={{ flexDirection: 'row', justifyContent: 'center' }}>
+        <FormControl aria-describedby="name-helper-text">
+          <InputLabel htmlFor="name-helper">Label</InputLabel>
+          <Input id="name-helper" style={{ minWidth: 200 }} value={email} onChange={event => setEmail(event.target.value)} fullWidth disabled={disabled} />
+        </FormControl>
+        <Button variant="fab" aria-label="Add" onClick={() => DoFacePass()} disabled={disabled || !email}>
+          <Send />
+        </Button>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 export default withRouter(LoginScreen)
