@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "concurrently \"cd server && npm run start\" \"cd client && npm run start\"",
-    "heroku-postbuild": "npm install --prefix client && npm build --prefix client && npm install --prefix server"
+    "heroku-postbuild": "npm install --prefix client && npm install --prefix server"
   },
   "repository": "https://github.com/K-jun1221/face-pass.git",
   "author": "K-jun <poittyo091221@gmail.com>",
