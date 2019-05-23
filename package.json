@@ -8,7 +8,5 @@
   "repository": "https://github.com/K-jun1221/face-pass.git",
   "author": "K-jun <poittyo091221@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "concurrently": "^4.1.0"
-  }
+  "dependencies": {}
 }
